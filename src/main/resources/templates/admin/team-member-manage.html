@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="context-path" th:content="@{/}"/>
+    <title>Title</title>
+    <link rel="stylesheet"
+          th:href="@{/css/qb.min.css}"></link>
+</head>
+<body style="margin:10px">
+
+<table>
+	<tr>
+		<td width="60%" valign="top">
+			<h4>团队成员</h4>
+		    <div id="left-table-toolbar">
+		
+		    </div>
+		    <table id="left-table" class="hover nowrap" width="100%"></table>
+		</td>
+		<td width="38%" style="padding-left:15px;" valign="top">
+		    <h4>用户搜索</h4>
+		    <div id="right-table-toolbar">
+		        <input type="text" class="text-input" style="width: 220px" placeholder="username,姓名" id="keyword_input"/>
+		        <button id="search_btn" class="btn" type="button" href="javascript:void(0)" >搜索</button>
+		    </div>
+		    <table id="right-table" class="hover nowrap" width="100%"></table>
+		</td>
+	</tr>
+</table>
+
+
+<script type="text/javascript" th:src="@{/js/qb.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/moment.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/datatable_render.js}"></script>
+<script type="text/javascript" th:src="@{/js/utils.js}"></script>
+</body>
+</html>
+
+<script type="text/javascript" th:inline="javascript">
+    /*<![CDATA[*/
+    var teamId = [[${teamId}]];
+    var team_member_query_url = "/user/queryTeamById";
+    var user_query_url = "/user/query";
+    var user_table;
+    var team_member_table;
+
+    function viewPaymentListWindow(commissionId) {
+        top.openWindow("paymentListForCustomerMgr?commissionId=" + commissionId,"查看佣金支付情况", 1200, 500);
+    }
+
+    function joinTeam(userId){
+        $.ajax({
+            url: "/team/join",
+            type: "POST",
+            data:{
+                teamId: teamId,
+                userId: userId
+            },
+            success: function (json) {
+                $('#left-table').DataTable().ajax.reload(null, false);
+            },
+            error: function (resp) {
+                var json = resp.responseJSON;
+                if(json.meta){
+                    alert(json.meta.errMsg);
+                }
+                else{
+                    alert(json);
+                }
+            }
+        });
+    }
+
+    function leaveTeam(userId){
+        $.ajax({
+            url: "/team/removeMember",
+            type: "POST",
+            data:{
+                teamId: teamId,
+                userId: userId
+            },
+            success: function (json) {
+                $('#left-table').DataTable().ajax.reload(null, false);
+            },
+            error: function (resp) {
+                var json = resp.responseJSON;
+                if(json.meta){
+                    alert(json.meta.errMsg);
+                }
+                else{
+                    alert(json);
+                }
+            }
+        });
+    }
+
+    function setTeamMemberRole(userId, roleType){
+        var url = "";
+        if(roleType == "team_mgr"){
+            url = "/team/setTeamManagerRole";
+        }
+        else{
+            url = "/team/setCustomerManagerRole";
+        }
+        $.ajax({
+            url: url,
+            type: "POST",
+            data:{
+                teamId: teamId,
+                userId: userId
+            },
+            success: function (json) {
+                $('#left-table').DataTable().ajax.reload(null, false);
+            },
+            error: function (resp) {
+                var json = resp.responseJSON;
+                if(json.meta){
+                    alert(json.meta.errMsg);
+                }
+                else{
+                    alert(json);
+                }
+            }
+        });
+    }
+
+    $(function(){
+        init_page();
+
+        team_member_table = create_table("#left-table", {
+            searching : false,
+            processing : true,
+            lengthChange : false,
+            info : false,
+            scrollX : true,
+            bProcessing : true,
+            bInfo : true,
+            ajax : {
+                url : team_member_query_url,
+                type : "POST",
+                data: function(parameters){
+                    parameters.teamId = teamId;
+                    return parameters;
+                }
+            },
+            paging : true,
+            serverSide : false,
+            pageLength : 12,
+            ordering : false,
+            columns : [
+                {
+                    data:'username',
+                    title:'用户名',
+                    className: 'dt-head-left'
+                },
+                {
+                    data:'realname',
+                    title:'姓名',
+                    className: 'dt-head-left'
+                },
+                {
+                    data:'roleType',
+                    title:'角色',
+                    className: 'dt-head-left',
+                    render: function(data, type, row, meta){
+                        if(data === "CUSTOMER_MGR"){
+                            return "客户经理";
+                        }
+                        else if(data === "TEAM_MGR"){
+                            return "TeamLeader";
+                        }
+                        else{
+                            return "未知角色"
+                        }
+                    }
+                },
+                {
+                    data: "userId",
+                    title: '操作',
+                    className: 'dt-head-left',
+                    render: function(data, type, row, meta){
+                        var btnHtml = "";
+                        if(row.roleType == "CUSTOMER_MGR"){
+                            btnHtml += "<button class='btn' onclick='setTeamMemberRole(\""+row.userId+"\", \"team_mgr\")'>设为TeamLeader</button>";
+                        }
+                        else{
+                            btnHtml += "<button class='btn' onclick='setTeamMemberRole(\""+row.userId+"\", \"customer_mgr\")'>设置客户经理</button>";
+                        }
+                        btnHtml += "<button class='btn' onclick='leaveTeam(\""+row.userId+"\")'>离开团队</button>";
+                        return btnHtml;
+                    }
+                }
+            ],
+            language : {
+                paginate : {
+                    previous : '上一页',
+                    next : '下一页',
+                    first : "首页",
+                    last : "尾页"
+                }
+            }
+
+        });
+
+        user_table = create_table('#right-table',{
+            searching : false,
+            processing : true,
+            lengthChange : false,
+            info : false,
+            scrollX : true,
+            bProcessing : true,
+            bInfo : true,
+            ajax : {
+                url : user_query_url,
+                type : "POST",
+                data: function(parameters){
+                    parameters.keyword = $("#keyword_input").val();
+                    return parameters;
+                }
+            },
+            paging : true,
+            serverSide : true,
+            pageLength : 12,
+            ordering : false,
+            columns : [
+                {
+                    data:'username',
+                    title:'用户名',
+                    className: 'dt-head-left'
+                },
+                {
+                    data:'realname',
+                    title:'姓名',
+                    className: 'dt-head-left'
+                },
+                {
+                    data: "userId",
+                    title: '操作',
+                    className: 'dt-head-left',
+                    render: function(data, type, row, meta){
+                        var btnHtml = "";
+                        btnHtml += "<button class='btn' onclick='joinTeam(\""+row.userId+"\")'>加入团队</button>";
+                        return btnHtml;
+                    }
+                }
+
+            ],
+            language : {
+                paginate : {
+                    previous : '上一页',
+                    next : '下一页',
+                    first : "首页",
+                    last : "尾页"
+                }
+            }
+        });
+
+        $("#search_btn").click(function () {
+            $('#right-table').DataTable().ajax.reload(null, false);
+        });
+
+    });
+    /*]]>*/
+</script>

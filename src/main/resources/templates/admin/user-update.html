@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="context-path" th:content="@{/}"/>
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/qb.min.css}"></link>
+    <style type="text/css">
+        body {
+            padding: 10px;
+        }
+
+        .form .form_item .tip {
+            display: inline-block;
+            width: 90px;
+        }
+
+        .form .form_item {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="form">
+    <form ss-validate="" class="cmxform ss-validate" id="createForm" onsubmit="return false">
+        <input type="hidden" name="user_id" id="user_id_input" th:value="${user.userId}"/>
+        <div class="form_item">
+            <label class="tip">真实姓名</label><input type="text" class="text-input" th:value="${user.realname}" name="realname" id="realname_input" minlength="2" required="true"/>
+        </div>
+        <div class="form_item">
+            <label class="tip">用户名</label><input type="text" class="text-input" th:value="${user.username}" name="username" id="username_input" minlength="2" required="true" />
+        </div>
+        <div class="form_item">
+            <label class="tip">邮箱</label><input type="text" class="text-input" th:value="${user.email}" name="email" id="email_input" minlength="10" required="true" />
+        </div>
+        <div class="form_item">
+            <label class="tip">登录密码</label><input type="text" class="text-input" value="" name="password" id="password_input" minlength="3" />
+        </div>
+        <div class="form_item">
+            <label class="tip">性别</label>
+            <select name="sex" id="sex_select">
+                <option value="m" th:selected="${user.sex == 'm'}">男</option>
+                <option value="f" th:selected="${user.sex == 'f'}">女</option>
+            </select>
+        </div>
+        <div class="form_item">
+            <label class="tip">年龄</label><input type="text" class="text-input" th:value="${user.age}" name="age" id="age_input" minlength="2" required="true"/>
+        </div>
+        <div style="text-align:center; margin-top:30px">
+            <input class="submit btn" type="submit" value="提交"/>
+        </div>
+
+    </form>
+</div>
+<script type="text/javascript" th:src="@{/js/qb.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/utils.js}"></script>
+</body>
+</html>
+<script type="text/javascript">
+    /*<![CDATA[*/
+    var create_url = "/user/update";
+    function createUser(){
+        $.ajax({
+            url: create_url,
+            type: "POST",
+            headers:{
+                "Content-Type":"application/json;charset=UTF-8"
+            },
+            data:JSON.stringify({
+                userId: $("#user_id_input").val(),
+                realname: $("#realname_input").val(),
+                username: $("#username_input").val(),
+                email:$("#email_input").val(),
+                sex:$("#sex_select").val(),
+                age:$("#age_input").val(),
+                password:$("#password_input").val()
+            }),
+            success:function(json){
+                top.document.getElementById("mainFrame").contentWindow.location.reload(true);
+                var index = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(index);
+            },
+            error:function(resp){
+                var json = resp.responseJSON;
+                if(json.meta){
+                    alert(json.meta.errMsg);
+                }
+                else{
+                    alert(json);
+                }
+            }
+        });
+    }
+
+
+
+    $(function () {
+        init_page();
+
+        $("#sex_select").chosen({
+            width: '200px',
+            disable_search: true
+        });
+
+        $("#createForm").validate({
+            submitHandler: function (form) {
+                createUser();
+            }
+        });
+
+        $("#username_input").blur(function () {
+            var val = $(this).val();
+            if(val != ""){
+                $("#email_input").val(val + "@sumscope.com");
+            }
+        });
+
+    });
+    /*]]>*/
+</script>

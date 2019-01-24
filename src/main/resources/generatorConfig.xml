@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+	<properties resource="database.properties"></properties>
+	<classPathEntry location="${db.driverLocation}"/>
+	<context id="context1">
+		
+		<!-- do not generate any comment. -->
+		<commentGenerator>
+		  <property name="suppressAllComments" value="true" />
+		</commentGenerator>
+
+		<jdbcConnection
+			connectionURL="jdbc:mysql://192.168.1.215:3306/db_app_statistics?useUnicode=true&amp;characterEncoding=utf8&amp;autoReconnect=true"
+			driverClass="com.mysql.jdbc.Driver" password="123456" userId="dev" />
+
+        <javaTypeResolver >
+            <property name="forceBigDecimals" value="true" />
+        </javaTypeResolver>
+
+		<javaModelGenerator targetPackage="com.sumslack.web.simple.model"
+			targetProject="./src/main/java" />
+			
+		<sqlMapGenerator targetPackage="com.sumslack.web.simple.dao"
+			targetProject="./src/main/resources" />
+			
+		<javaClientGenerator targetPackage="com.sumslack.web.simple.dao"
+			targetProject="./src/main/java" type="XMLMAPPER" />
+		
+		<table tableName="role_user" domainObjectName="RoleUserModel" enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false"></table>
+        <table tableName="team" domainObjectName="TeamModel" enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false"></table>
+        <table tableName="team_user" domainObjectName="TeamUserModel" enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false"></table>
+        <table tableName="user" domainObjectName="UserModel" enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false"></table>
+	</context>
+</generatorConfiguration>

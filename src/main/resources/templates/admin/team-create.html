@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="context-path" th:content="@{/}"/>
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/qb.min.css}"></link>
+    <style type="text/css">
+        body {
+            padding: 10px;
+        }
+
+        .form .form_item .tip {
+            display: inline-block;
+            width: 90px;
+        }
+
+        .form .form_item {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form">
+        <form ss-validate="" class="cmxform ss-validate" id="createForm" onsubmit="return false">
+            <div class="form_item">
+                <label class="tip">团队名称</label><input type="text" class="text-input" value="" name="team_name" id="team_name_input" minlength="3" required="true"/>
+            </div>
+            <div class="form_item">
+                <label class="tip">描述</label><input type="text" class="text-input" value="" name="team_desc" id="team_desc_input" />
+            </div>
+            <div style="text-align:center; margin-top:30px">
+                <input class="submit btn" type="submit" value="提交"/>
+            </div>
+
+        </form>
+    </div>
+    <script type="text/javascript" th:src="@{/js/qb.min.js}"></script>
+    <script type="text/javascript" th:src="@{/js/utils.js}"></script>
+</body>
+</html>
+<script type="text/javascript">
+    /*<![CDATA[*/
+    var create_url = "/team/create";
+    function createCommissionOrder(){
+        $.ajax({
+            url: create_url,
+            type: "POST",
+            data:{
+                name: $("#team_name_input").val(),
+                description: $("#team_desc_input").val(),
+            },
+            success:function(json){
+                top.document.getElementById("mainFrame").contentWindow.location.reload(true);
+                var index = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(index);
+            },
+            error:function(resp){
+                var json = resp.responseJSON;
+                if(json.meta){
+                    alert(json.meta.errMsg);
+                }
+                else{
+                    alert(json);
+                }
+            }
+        });
+    }
+    $(function () {
+        init_page();
+
+        $("#createForm").validate({
+            submitHandler: function (form) {
+                createCommissionOrder();
+            }
+        });
+
+    });
+    /*]]>*/
+</script>

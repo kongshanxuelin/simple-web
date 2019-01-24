@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="context-path" th:content="@{/}"/>
+    <title>测试</title>
+    <link rel="stylesheet"
+          th:href="@{/css/qb.min.css}"></link>
+</head>
+<body>
+<div id="toolbar" th:text="${appName}">
+    
+</div>
+<table id="table" class="hover nowrap" width="100%"></table>
+<script type="text/javascript" th:src="@{/js/qb.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/moment.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/datatable_render.js}"></script>
+<script type="text/javascript" th:src="@{/js/utils.js}"></script>
+</body>
+</html>

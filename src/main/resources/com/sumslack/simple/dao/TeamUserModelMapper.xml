@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sumslack.web.simple.dao.TeamUserModelMapper" >
+  <resultMap id="BaseResultMap" type="com.sumslack.web.simple.model.TeamUserModel" >
+    <id column="_id" property="id" jdbcType="BIGINT" />
+    <result column="team_id" property="teamId" jdbcType="CHAR" />
+    <result column="user_id" property="userId" jdbcType="CHAR" />
+    <result column="type" property="type" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    _id, team_id, user_id, type, create_time, update_time
+  </sql>
+  <select id="selectByTeamIdUserId" resultMap="BaseResultMap" parameterType="java.util.Map" >
+    select 
+    <include refid="Base_Column_List" />
+    from team_user
+    where
+    team_id = #{teamId,jdbcType=VARCHAR}
+    and
+    user_id = #{userId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByTeamIdUserId" parameterType="java.util.Map" >
+    delete from team_user
+    where
+    team_id = #{teamId,jdbcType=VARCHAR}
+      and
+    user_id = #{userId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.sumslack.web.simple.model.TeamUserModel" >
+    insert into team_user (_id, team_id, user_id, 
+      type, create_time, update_time
+      )
+    values (#{id,jdbcType=BIGINT}, #{teamId,jdbcType=CHAR}, #{userId,jdbcType=CHAR}, 
+      #{type,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+
+
+  <update id="updateByPrimaryKey" parameterType="com.sumslack.web.simple.model.TeamUserModel" >
+    update team_user
+    set team_id = #{teamId,jdbcType=CHAR},
+      user_id = #{userId,jdbcType=CHAR},
+      type = #{type,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where _id = #{id,jdbcType=BIGINT}
+  </update>
+  
+  <select id="selectTeamNameByUserId" resultType="java.lang.String" parameterType="java.lang.String" >
+    select name
+    FROM team, team_user where team.team_id = team_user.team_id and team_user.user_id =#{userId, jdbcType=VARCHAR}
+  </select>
+</mapper>

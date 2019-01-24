@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="context-path" th:content="@{/}"/>
+    <title>XXX 管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/qb.min.css}"></link>
+    <style>
+        html, body {
+            width:		100%;
+            height:		100%;
+            padding:	0;
+            margin:		0;
+            overflow:	auto; /* when page gets too small */
+        }
+        #container {
+            height:		100%;
+            margin:		0 auto;
+            width:		100%;
+            max-width:	1600px;
+            min-width:	800px;
+            _width:		800px; /* min-width for IE6 */
+        }
+        .pane {
+            display:	none; /* will appear when layout inits */
+        }
+
+        #west-menu ul{
+            list-style:none;
+            list-style-type:none;
+            margin:0px;
+        }
+
+        #west-menu ul li{
+            margin-top:5px;
+        }
+        .pcont{
+            margin-left:40px;
+            float:left;
+            /* font-weight:bold; */
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+
+    <iframe id="mainFrame" name="mainFrame" class="ui-layout-center"
+            width="100%" frameborder="0" scrolling="auto" style="padding:10px;"
+            src="">
+    </iframe>
+
+
+    <div class="pane ui-layout-north">
+
+        <h1 style="margin-left:20px;font-size:20px;float:left;margin-top: 40px;" th:text="${appName}"></h1>
+        <div class="pcont">
+            <p th:if="${env} == 'dev'">
+                    <br/>
+                    <h3 style="font-size:14px;color:red">注意：目前是测试环境，所填的数据都仅用于测试!!!</h3>
+            </p>
+        </div>
+        <div style="float:right;margin:20px;">
+            当前用户：<span th:text="${loginInfo.user.realname}  "></span>
+            <!--
+            （
+                <span th:each="role,itStatus : ${loginInfo.roles}" th:text="${role}">
+
+                </span>
+            ）
+            -->
+            &nbsp;&nbsp;<a href="javascript:void(0)" onclick="changePassword();">修改密码</a>
+            &nbsp;&nbsp;<a href="javascript:logout()">退出</a>
+        </div>
+    </div>
+    <div class="pane ui-layout-west">
+        <div id="west-menu">
+            <ul>
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+
+<script type="text/javascript" th:src="@{/js/qb.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/utils.js}"></script>
+
+
+
+<script type="text/javascript" th:inline="javascript">
+    /*<![CDATA[*/
+    var logout_url = "/authentication/logout";
+    var normalUser = /*[[${#sets.contains(loginInfo.roles, 'CUSTOMER_MGR')}]]*/;
+    var hrUser = /*[[${#sets.contains(loginInfo.roles, 'HR')}]]*/;
+    var teamLeaderUser = /*[[${#sets.contains(loginInfo.roles, 'TEAM_MGR')}]]*/;
+    var financeUser = /*[[${#sets.contains(loginInfo.roles, 'FINANCE')}]]*/;
+
+    function changePassword(){
+        openWindow('passwordChange','修改密码', 500, 300);
+    }
+
+    function init(){
+        var html = "";
+        var startUrl = "";
+        if(normalUser){
+            startUrl = "admin/test";
+            html += "<li><a target='mainFrame' href='admin/test'>测试页</a></li>";
+        }
+        if(teamLeaderUser){
+            startUrl = "admin/test";
+            html += "<li><a target='mainFrame' href='admin/test'>测试页</a></li>";
+        }
+        if(hrUser){
+            startUrl = "admin/test";
+            html += "<li><a target='mainFrame' href='admin/test'>测试页</a></li>";
+            html += "<li><a target='mainFrame' href='admin/teamManage'>团队管理</a></li>";
+            html += "<li><a target='mainFrame' href='admin/userManage'>用户管理</a></li>";
+        }
+        $("#west-menu ul").html(html);
+        $("#mainFrame").attr("src",startUrl);
+    }
+
+    function logout(){
+        $.ajax({
+            url : logout_url,
+            method : "POST",
+            success:function(json){
+                location.href = page_vars.context_path + "/login";
+            },
+            error:function(){
+                console.log("logout error.")
+            }
+        });
+    }
+    $(function() {
+        init_page();
+        init();
+        $('#container').layout({
+            defaults: {
+                fxName:               "none"
+                ,  fxSpeed:               "slow"
+                ,  resizable: 			false
+                ,  spacing_closed:        8
+                ,  initClosed:            false
+                ,	contentSelector:		".ui-widget-content"
+                ,	togglerContent_open:	''
+                ,	togglerContent_closed:	''
+
+            },
+            west: {
+                size:150
+            }
+        });
+    });
+    /*]]>*/
+</script>
+
+
+</body>
+</html>

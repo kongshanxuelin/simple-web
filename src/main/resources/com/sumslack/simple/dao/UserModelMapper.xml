@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sumslack.web.simple.dao.UserModelMapper" >
+  <resultMap id="BaseResultMap" type="com.sumslack.web.simple.model.UserModel" >
+    <id column="_id" property="id" jdbcType="BIGINT" />
+    <result column="user_id" property="userId" jdbcType="CHAR" />
+    <result column="username" property="username" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="password" property="password" jdbcType="CHAR" />
+    <result column="realname" property="realname" jdbcType="VARCHAR" />
+    <result column="sex" property="sex" jdbcType="CHAR" />
+    <result column="age" property="age" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="CHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <resultMap id="BaseResultWithRoleMap" type="com.sumslack.web.simple.model.UserWithRoleTypeModel" extends="BaseResultMap">
+    <result column="type" property="roleType" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    _id, user_id, username, email, password, realname, sex, age, status, create_time, 
+    update_time
+  </sql>
+
+  <sql id="Base_Column_List_With_Alias" >
+    a._id, a.user_id, a.username, a.email, a.password, a.realname, a.sex, a.age, a.status, a.create_time,
+    a.update_time
+  </sql>
+
+  <sql id="Base_Column_List_With_Prefix" >
+    user._id, user.user_id, user.username, user.email, user.password, user.realname, user.sex, user.age, user.status, user.create_time,
+    user.update_time
+  </sql>
+
+  <sql id="Base_Column_List_With_Role_With_Prefix" >
+    user._id, user.user_id, user.username, user.email, user.password, user.realname, user.sex, user.age, user.status, user.create_time,
+    user.update_time, team_user.type
+  </sql>
+
+  <select id="select" resultMap="BaseResultMap" parameterType="com.sumslack.web.simple.dto.UserQueryDTO">
+    SELECT
+    <include refid="Base_Column_List_With_Alias"/>
+    from user a inner JOIN (
+      select _id from user
+        where status = '0'
+        <if test="keyword != null and keyword != '' ">
+          and
+          (
+          username like CONCAT('%',#{keyword, jdbcType=VARCHAR},'%')
+          or
+          realname like CONCAT('%',#{keyword, jdbcType=VARCHAR},'%')
+          )
+        </if>
+        order by create_time desc
+        limit #{start, jdbcType=INTEGER}, #{limit, jdbcType=INTEGER}
+    ) as b
+    ON  a._id = b._id
+  </select>
+
+  <select id="selectCount" resultType="java.lang.Long" parameterType="com.sumslack.web.simple.dto.UserQueryDTO">
+    select count(*) from user
+    where
+    status = '0'
+    <if test="keyword != null and keyword != '' ">
+      and (
+      username like CONCAT('%',#{keyword, jdbcType=VARCHAR},'%')
+      or
+      realname like CONCAT('%',#{keyword, jdbcType=VARCHAR},'%')
+      )
+    </if>
+  </select>
+
+  <select id="selectUserChoose" resultType="java.util.Map">
+    select user_id,username,realname,(select name from team_user,team where team_user.team_id=team.team_id and user_id=user.user_id) team
+	from user where `status` not in ('1') order by team
+  </select>
+
+  <select id="selectByUsername" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List" />
+    from user
+    where username=#{username,jdbcType=VARCHAR}
+    and status='0'
+  </select>
+
+  <select id="selectByUserId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List" />
+    from user
+    where user_id=#{userId,jdbcType=VARCHAR}
+    and status='0'
+  </select>
+
+  <select id="selectByUserIdList" resultMap="BaseResultMap" parameterType="java.util.Map" >
+    select
+    <include refid="Base_Column_List" />
+    from user
+    where
+    user_id in
+    <foreach collection="userIdList" close=")" open="(" separator="," item="userId">
+      #{userId,jdbcType=CHAR}
+    </foreach>
+    and status='0'
+  </select>
+
+  <select id="getTeamManagerByTeamId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List_With_Prefix" />
+    from user, team_user where team_user.user_id = user.user_id and user.status = '0' and team_user.type='TEAM_MGR' AND team_user.team_id=#{teamId,jdbcType=VARCHAR}
+  </select>
+
+
+  <select id="selectByTeamId" resultMap="BaseResultWithRoleMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List_With_Role_With_Prefix" />
+    from user, team_user where team_user.user_id = user.user_id and user.status = '0'  AND team_user.team_id=#{teamId,jdbcType=VARCHAR}
+  </select>
+
+
+  <insert id="insert" parameterType="com.sumslack.web.simple.model.UserModel" >
+    insert into user (_id, user_id, username, 
+      email, password, realname, 
+      sex, age, status, create_time, 
+      update_time)
+    values (#{id,jdbcType=BIGINT}, #{userId,jdbcType=CHAR}, #{username,jdbcType=VARCHAR}, 
+      #{email,jdbcType=VARCHAR}, #{password,jdbcType=CHAR}, #{realname,jdbcType=VARCHAR}, 
+      #{sex,jdbcType=CHAR}, #{age,jdbcType=INTEGER}, #{status,jdbcType=CHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+
+  <update id="updateByUserId" parameterType="com.sumslack.web.simple.model.UserModel" >
+    update user
+    set
+      username = #{username,jdbcType=VARCHAR},
+      email = #{email,jdbcType=VARCHAR},
+      password = #{password,jdbcType=CHAR},
+      realname = #{realname,jdbcType=VARCHAR},
+      sex = #{sex,jdbcType=CHAR},
+      age = #{age,jdbcType=INTEGER},
+      status = #{status,jdbcType=CHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where user_id = #{userId,jdbcType=CHAR}
+  </update>
+</mapper>

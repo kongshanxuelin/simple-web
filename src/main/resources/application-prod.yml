@@ -1,0 +1,23 @@
+server:
+    port: 8082
+    context-path: "/"
+
+database:
+    main:
+        url: "jdbc:mysql://192.168.1.215:3306/db_app_statistics?useUnicode=true&characterEncoding=utf8&autoReconnect=true"
+        driverClassName: "com.mysql.jdbc.Driver"
+        username: 'dev'
+        password: "123456"
+        min-idle: 5
+        max-active: 20
+        initial-size: 5
+        validation-query: "SELECT 1"
+        test-on-borrow: true
+
+spring:
+  thymeleaf:
+    cache: true
+    prefix: "classpath:/templates/"
+    suffix: ".html"
+    encoding: "UTF-8"
+    content-type: "text/html"

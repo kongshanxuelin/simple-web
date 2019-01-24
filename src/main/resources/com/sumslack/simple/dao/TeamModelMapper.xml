@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sumslack.web.simple.dao.TeamModelMapper" >
+  <resultMap id="BaseResultMap" type="com.sumslack.web.simple.model.TeamModel" >
+    <id column="_id" property="id" jdbcType="BIGINT" />
+    <result column="team_id" property="teamId" jdbcType="CHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <resultMap id="BaseResultWithRoleMap" type="com.sumslack.web.simple.model.TeamWithRoleTypeModel" extends="BaseResultMap" >
+    <result column="type" property="type" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    _id, team_id, name, description, create_time, update_time
+  </sql>
+
+  <sql id="Base_Column_List_With_Role_Type" >
+    team._id, team.team_id, team.name, team.description, team.create_time, team.update_time, team_user.type
+  </sql>
+
+  <select id="queryAll" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List" />
+    from team
+  </select>
+
+  <select id="selectByName" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from team
+    where name = #{name,jdbcType=VARCHAR}
+  </select>
+
+  <select id="selectByTeamId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List" />
+    from team
+    where team_id = #{teamId,jdbcType=VARCHAR}
+  </select>
+
+  <select id="selectByUserId" resultMap="BaseResultWithRoleMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List_With_Role_Type" />
+    FROM team, team_user where team.team_id = team_user.team_id and team_user.user_id =#{userId, jdbcType=VARCHAR}
+  </select>
+
+  <insert id="insert" parameterType="com.sumslack.web.simple.model.TeamModel" >
+    insert into team (_id, team_id, name, 
+      description, create_time, update_time
+      )
+    values (#{id,jdbcType=BIGINT}, #{teamId,jdbcType=CHAR}, #{name,jdbcType=VARCHAR}, 
+      #{description,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+
+  <delete id="deleteByTeamId" parameterType="java.lang.String">
+    delete from team where team_id=#{teamId, jdbcType=VARCHAR}
+  </delete>
+
+
+</mapper>

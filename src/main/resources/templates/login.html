@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="context-path" th:content="@{/}"/>
+    <title>登录</title>
+    <link rel="stylesheet" th:href="@{/css/qb.min.css}"></link>
+
+</head>
+<body style="text-align:center;">
+
+
+<div style="margin:200px auto;text-align:center">
+
+    <h1 style="font-size:20px"><span style="color:orange;padding:0 5px" th:text="${appName}"></span>管理系统</h1>
+    <div style="margin:0 auto;width:500px;border-radius: 5px;border: 1px solid #00acad;padding:30px;">
+        <p>
+            <input type="text" class="text-input" style="line-height:30px;height:30px;width:300px;" value="hr" placeholder="用户名"  id="username_input" />
+        </p>
+        <p>
+            <input type="password" class="text-input" style="line-height:30px;height:30px;width:300px;" value="123456" placeholder="密码" id="password_input"/>
+        </p>
+        <p>
+            <button class="btn" type="button" id="login_btn" style="line-height:40px;height:40px;width:60px;">登录</button>
+        </p>
+        <div id="login_info" style="color:red;"></div>
+    </div>
+    <div>
+        <small style="color:gray">推荐使用chrome浏览器(<a href="http://sw.bos.baidu.com/sw-search-sp/software/1e5d43b6599f5/ChromeStandalone_64.0.3282.119_Setup.exe">PC</a>, <a href="http://sw.bos.baidu.com/sw-search-sp/software/b77ec09507e2a/googlechrome_mac_63.0.3239.84.dmg">MAC</a>, <a href="javascript:void(0)" onclick="tip_for_linux()">Linux</a>)</small>
+    </div>
+</div>
+
+
+<script type="text/javascript" th:src="@{/js/qb.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/utils.js}"></script>
+
+<script type="text/javascript">
+    var login_url = "/authentication/login";
+
+    function tip_for_linux() {
+        alert("使用Linux的都是能人，自行解决：）");
+    }
+
+    $(function(){
+        init_page();
+        
+        $("#username_input,#password_input").bind("keypress", function (event) {
+            if(event.keyCode == "13") {
+                $("#login_btn").trigger("click");
+            }
+        })
+        
+        $("#login_btn").bind("click", function(){
+            //console.log("start login...");
+            var username = $("#username_input").val();
+            var password = $("#password_input").val();
+            if(username == undefined || username == null || username==""){
+                alert("请输入用户名");
+                return;
+            }
+            if(password == undefined || password == null || password==""){
+                alert("请输入密码");
+                return;
+            }
+
+            $("#login_info").empty();
+            $.ajax({
+                url : login_url,
+                method : "POST",
+                data:	{
+                    username: username,
+                    password: password
+                },
+                success:function(json){
+                    location.href = page_vars.context_path + "/index";
+                },
+                error:function(resp){
+                    var json = resp.responseJSON;
+                    if(json.meta){
+                        $("#login_info").text(json.meta.errMsg);
+                    }
+                    else{
+                        $("#login_info").text(json);
+                    }
+                }
+            });
+        });
+
+        $("#password_input").bind("keyup", function(e){
+            if(e.keyCode == 13){
+                $("#login_btn").trigger("click");
+            }
+
+        });
+
+    });
+</script>
+
+</body>
+</html>

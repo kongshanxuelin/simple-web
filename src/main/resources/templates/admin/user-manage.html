@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="context-path" th:content="@{/}"/>
+    <title>Title</title>
+    <link rel="stylesheet"
+          th:href="@{/css/qb.min.css}"></link>
+</head>
+<body>
+<div id="toolbar">
+    <button class="btn" type="button" href="javascript:void(0)" onclick="createUserWindow()">添加</button>&nbsp;
+    <button class="btn" type="button" href="javascript:void(0)" onclick="createUseresWindow()">批量添加</button>
+</div>
+<table id="table" class="hover nowrap" width="100%"></table>
+<script type="text/javascript" th:src="@{/js/qb.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/moment.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/datatable_render.js}"></script>
+<script type="text/javascript" th:src="@{/js/utils.js}"></script>
+</body>
+</html>
+
+<script type="text/javascript" th:inline="javascript">
+    /*<![CDATA[*/
+    var query_url = "/user/query";
+    var table;
+
+    function createUserWindow() {
+        top.openWindow("admin/userCreate","添加新用户", 500, 350);
+    }
+
+    function editUserWindow(userId) {
+        top.openWindow("admin/userUpdate?userId=" + userId,"用户信息修改",500, 350);
+    }
+    
+    function createUseresWindow(){
+    	top.openWindow("admin/useresCreate","批量导入用户", 500, 350);
+    }
+    
+    function deleteUser(userId){
+        confirm("确定要删除该用户?", function (index) {
+            $.ajax({
+                url: "/user/delete",
+                type: "POST",
+                data:{
+                    userId: userId
+                },
+                success: function (json) {
+                    $('#table').DataTable().ajax.reload(null, false);
+                    layer.close(index);
+                },
+                error: function (resp) {
+                    var json = resp.responseJSON;
+                    if(json.meta){
+                        alert(json.meta.errMsg);
+                    }
+                    else{
+                        alert(json);
+                    }
+                }
+            });
+        });
+    }
+
+    $(function(){
+        init_page();
+
+        table = create_table('#table',{
+            searching : false,
+            processing : true,
+            lengthChange : false,
+            info : false,
+            scrollX : true,
+            bProcessing : true,
+            bInfo : true,
+            ajax : {
+                url : query_url,
+                type : "POST",
+                data: function(parameters){
+                    return parameters;
+                }
+            },
+            paging : true,
+            serverSide : true,
+            pageLength : 14,
+            ordering : false,
+            columns : [
+                {
+                    data:'username',
+                    title:'用户名',
+                    className: 'dt-head-left'
+                },
+                {
+                    data:'email',
+                    title:'邮箱',
+                    className: 'dt-head-left'
+                },
+                {
+                    data:'realname',
+                    title:'姓名',
+                    className: 'dt-head-left'
+                },
+                {
+                    data:'sex',
+                    title:'性别',
+                    className: 'dt-head-left',
+                    render: function(data, type, row, meta){
+                        if(data == "m"){
+                            return "男";
+                        }
+                        else if(data == "f"){
+                            return "女";
+                        }
+                        else{
+                            return "未知";
+                        }
+                    }
+                },
+                {
+                    data:'age',
+                    title:'年龄',
+                    className: 'dt-head-left'
+                },
+                {
+                    data: "userId",
+                    title: '操作',
+                    className: 'dt-head-left',
+                    render: function(data, type, row, meta){
+                        var btnHtml = "";
+                        btnHtml += "<button class='btn' onclick='editUserWindow(\""+row.userId+"\")'>编辑</button>";
+                        btnHtml += "<button class='btn' onclick='deleteUser(\""+row.userId+"\")'>删除</button>";
+                        return btnHtml;
+                    }
+                }
+
+            ],
+            language : {
+                paginate : {
+                    previous : '上一页',
+                    next : '下一页',
+                    first : "首页",
+                    last : "尾页"
+                }
+            }
+        });
+
+        /*
+        $("#search_btn").click(function () {
+            $('#table').DataTable().ajax.reload(null, false);
+        });
+        */
+    });
+    /*]]>*/
+</script>

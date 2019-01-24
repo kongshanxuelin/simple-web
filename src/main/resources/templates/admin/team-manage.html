@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="context-path" th:content="@{/}"/>
+    <title>Title</title>
+    <link rel="stylesheet"
+          th:href="@{/css/qb.min.css}"></link>
+</head>
+<body>
+<div id="toolbar">
+    <button class="btn" type="button" href="javascript:void(0)" onclick="createTeamWindow()">添加新团队</button>
+</div>
+<table id="table" class="hover nowrap" width="100%"></table>
+<script type="text/javascript" th:src="@{/js/qb.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/moment.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/datatable_render.js}"></script>
+<script type="text/javascript" th:src="@{/js/utils.js}"></script>
+</body>
+</html>
+
+<script type="text/javascript" th:inline="javascript">
+    /*<![CDATA[*/
+    var query_url = "/team/queryAll";
+    var table;
+
+    function createTeamWindow() {
+        top.openWindow("admin/teamCreate","团队创建", 400, 300);
+    }
+
+    function viewTeamMemberWindow(teamId) {
+        top.openWindow("admin/teamMemberManage?teamId=" + teamId,"成员管理", 1200, 700);
+    }
+    function viewTeamMemberBatchWindow(teamId) {
+        top.openWindow("admin/teamMemberBatchManage?teamId=" + teamId,"批量添加管理", 920, 700);
+    }
+    
+    function deleteTeam(teamId){
+        confirm("确定要删除该团队?", function (index) {
+            $.ajax({
+                url: "/team/delete",
+                type: "POST",
+                data:{
+                    teamId: teamId
+                },
+                success: function (json) {
+                    $('#table').DataTable().ajax.reload(null, false);
+                    layer.close(index);
+                },
+                error: function (resp) {
+                    var json = resp.responseJSON;
+                    if(json.meta){
+                        alert(json.meta.errMsg);
+                    }
+                    else{
+                        alert(json);
+                    }
+                }
+            });
+        });
+    }
+
+    $(function(){
+        init_page();
+
+        table = create_table('#table',{
+            searching : false,
+            processing : true,
+            lengthChange : false,
+            info : false,
+            scrollX : true,
+            bProcessing : true,
+            bInfo : true,
+            ajax : {
+                url : query_url,
+                type : "POST",
+                data: function(parameters){
+                    return parameters;
+                }
+            },
+            paging : false,
+            serverSide : true,
+            ordering : false,
+            columns : [
+                {
+                    data:'name',
+                    title:'团队名称',
+                    className: 'dt-head-left'
+                },
+                {
+                    data:'description',
+                    title:'描述',
+                    className: 'dt-head-left'
+                },
+                {
+                    data: "teamId",
+                    title: '操作',
+                    className: 'dt-head-left',
+                    render: function(data, type, row, meta){
+                        var btnHtml = "";
+                        btnHtml += "<button class='btn' onclick='viewTeamMemberWindow(\""+row.teamId+"\")'>管理成员</button>";
+                        btnHtml += "<button class='btn' onclick='viewTeamMemberBatchWindow(\""+row.teamId+"\")'>批量添加成员</button>";
+                        btnHtml += "<button class='btn' onclick='deleteTeam(\""+row.teamId+"\")'>删除团队</button>";
+                        return btnHtml;
+                    }
+                }
+
+            ],
+            language : {
+                paginate : {
+                    previous : '上一页',
+                    next : '下一页',
+                    first : "首页",
+                    last : "尾页"
+                }
+            }
+        });
+
+        /*
+        $("#search_btn").click(function () {
+            $('#table').DataTable().ajax.reload(null, false);
+        });
+        */
+    });
+    /*]]>*/
+</script>

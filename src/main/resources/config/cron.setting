@@ -1,0 +1,1 @@
+com.sumslack.web.simple.job.CacheJob.execute = */15 * * * * ?
